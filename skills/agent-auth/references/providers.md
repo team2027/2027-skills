@@ -5,7 +5,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 **Legend**
 - 🟢 default `login` auto-opens the popup **and** stores the token itself — the happy path.
 - 🔵 **device-code** — shows a `user_code`/URL to confirm in the browser (no localhost callback); surface the code to the human before they approve.
-- ⌨️ **needs a real TTY** — bare/backgrounded login hits an interactive prompt and *fatals*. Drive it in a real-terminal foreground, with `npx noninteractive` (npm-package CLIs only), or `expect` (binary / `npm i -g` / brew CLIs).
+- ⌨️ **needs a real TTY** — bare/backgrounded login hits an interactive prompt and *fatals*. Drive it in a real-terminal foreground, with `npx noninteractive` (`<pkg>` for npm CLIs, `start <binary>` for binaries — then `send` the keystroke), or `expect`.
 - 🔗 **prints the URL only** (no auto-open) — you must surface the URL to the human yourself.
 - `token` = the env var that skips the popup entirely (CI / headless / no-popup fallback).
 
@@ -25,7 +25,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 | Clerk 🟢 | `npx -y clerk` | `clerk auth login` *(does NOT print URL — popup only)* | `clerk whoami` | `CLERK_SECRET_KEY` |
 | Railway 🟢⌨️ | `brew install railway` *(npm postinstall fetches the binary; breaks under `ignore-scripts` — check `railway --version` prints)* | `railway login` *(needs a TTY → `expect`; prints `Logged in as <name>`)* | `railway whoami` | `RAILWAY_API_TOKEN` |
 | Heroku 🟢⌨️ | `npx -y heroku@latest` *(`npm i -g` lands off non-interactive PATH)* | `npx noninteractive heroku login` *(`Press any key…` raw-mode → send a key; unset `HEROKU_API_KEY`; prints `Logged in as <email>`)* | `heroku whoami` | `HEROKU_API_KEY` |
-| Daytona 🟢⌨️ | binary / `brew` *(no npm pkg → `expect`, not noninteractive)* | `daytona login` *(TUI picker → Enter on "Login with Browser"; prints `Successfully logged in!`)* | `daytona organization list` | `DAYTONA_API_KEY` (or `login --api-key`) |
+| Daytona 🟢⌨️ | binary / `brew` *(no npm pkg → `noninteractive start daytona …` or `expect`)* | `daytona login` *(TUI picker → Enter on "Login with Browser"; prints `Successfully logged in!`)* | `daytona organization list` | `DAYTONA_API_KEY` (or `login --api-key`) |
 | Convex 🟢⌨️ | `npx -y convex` | `convex login --device-name <name>` *(`--device-name` skips the prompt)* | `convex login status` | `CONVEX_DEPLOY_KEY` |
 | Supabase ⌨️ | `npx -y supabase` / brew tap | `supabase login` *(opens browser to mint a token, then prompts `Enter your access token` to paste it back; `--token` / `SUPABASE_ACCESS_TOKEN` skips the prompt)* | `supabase projects list` | `SUPABASE_ACCESS_TOKEN` |
 | Auth0 🔵⌨️ | `brew install auth0/auth0-cli/auth0` | `auth0 login` *(survey "As a user/machine" + `Press Enter`; match the user code)* | `auth0 tenants list` | — *(no env token; CI = machine login `auth0 login --client-id … --client-secret … --domain …`)* |
@@ -34,7 +34,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 
 ## The ⌨️ TTY-gated logins (where a bare/backgrounded run fatals)
 
-These show an interactive prompt *before* the popup, so a non-TTY run errors out. Run them in a real-terminal foreground, via `npx noninteractive` (npm CLIs), or `expect` (binary / global / brew CLIs), sending the keystroke:
+These show an interactive prompt *before* the popup, so a non-TTY run errors out. Run them in a real-terminal foreground, via `npx noninteractive` (`<pkg>` or `start <binary>`) or `expect`, sending the keystroke:
 
 - **Railway** — needs a TTY (non-TTY: `Cannot login in non-interactive mode`); v5.x auto-opens under a PTY with no keystroke (older builds prompted `Open the browser? (Y/n)`). `railway login --browserless` is the pairing-code fallback (also needs a TTY).
 - **Heroku** — `Press any key to open up the browser to login or q to exit` (raw-mode `stdin`); piped stdin throws.
