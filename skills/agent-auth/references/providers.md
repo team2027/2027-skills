@@ -11,8 +11,8 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 
 | Provider | Light install | Login command | Verify | Token env (CI) |
 |---|---|---|---|---|
-| Sanity 🟢 | `npx -y @sanity/cli@latest` | `sanity login --provider google` ⌨️*(picker → pass `--provider`)* | `sanity debug` → `User:` | `SANITY_AUTH_TOKEN` |
-| Netlify 🟢 | `npx -y netlify-cli` | `netlify login` *(polls API, no localhost server)* | `netlify status` | `NETLIFY_AUTH_TOKEN` |
+| Sanity 🟢 | `npx -y @sanity/cli@latest` | `sanity login --provider google` ⌨️*(picker → pass `--provider`)* | `sanity debug` → grep `Email:` *(multiline block; `User:` is just a header)* | `SANITY_AUTH_TOKEN` |
+| Netlify 🟢 | `npx -y netlify-cli` | `netlify login` *(polls API, no localhost server)* | `netlify status` *(exits 1 outside a linked project even when logged in — parse stdout)* | `NETLIFY_AUTH_TOKEN` |
 | Vercel 🔵 | `npx -y vercel` | `vercel login` *(device-code: auto-opens `…/oauth/device?user_code=XXXX`; show the human the code; unset `CI`)* | `vercel whoami` | `VERCEL_TOKEN` |
 | Cloudflare 🟢 | `npx -y wrangler@latest` | `wrangler login` *(localhost:8976 callback; prints `Successfully logged in.`)* | `wrangler whoami` | `CLOUDFLARE_API_TOKEN` (+`CLOUDFLARE_ACCOUNT_ID`) |
 | Modal 🟢 | `pip install modal` | `modal setup` *(NOT `modal login`)* | `modal token info` | `MODAL_TOKEN_ID`+`MODAL_TOKEN_SECRET` |
@@ -26,7 +26,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 | Railway 🟢⌨️ | `npm i -g @railway/cli` *(need **v5+** — a brew/global at v5+ is fine; reinstall `--foreground-scripts` if `railway --version` is blank/<5: postinstall fetches the binary, skipped under `ignore-scripts`. Old v4.x's browser callback is flaky)* | `railway login` *(TTY → `expect`); **if it returns `No token received`, retry `railway login --browserless`** (pairing code)* | `railway whoami` | `RAILWAY_API_TOKEN` |
 | Heroku 🟢⌨️ | `npx -y heroku@latest` *(`npm i -g` lands off non-interactive PATH)* | `npx noninteractive heroku login` *(`Press any key…` raw-mode → send a key; unset `HEROKU_API_KEY`; prints `Logged in as <email>`)* | `heroku whoami` | `HEROKU_API_KEY` |
 | Daytona 🟢⌨️ | binary / `brew` *(no npm pkg → `npx noninteractive start daytona …` or `expect`)* | `daytona login` *(TUI picker → Enter on "Login with Browser"; prints `Successfully logged in!`)* | `daytona organization list` | `DAYTONA_API_KEY` (or `login --api-key`) |
-| Convex 🟢⌨️ | `npx -y convex` | `convex login --device-name <name>` *(`--device-name` skips the prompt)* | `convex login status` | `CONVEX_DEPLOY_KEY` |
+| Convex 🔵⌨️ | `npx -y convex` | `convex login --device-name <name>` *(device-code: prints `…/device?user_code=XXXX`. `--device-name` skips only the FIRST prompt; a second `Open the browser? (Y/n)` gate ALSO needs a TTY — `--device-name` alone still fatals non-interactive, so drive it with `expect`/`noninteractive`)* | `convex login status` *(shows teams, not email)* | `CONVEX_DEPLOY_KEY` |
 | Supabase ⌨️ | `npx -y supabase` / brew tap | `supabase login` *(opens browser to mint a token, then prompts `Enter your access token` to paste it back; `--token` / `SUPABASE_ACCESS_TOKEN` skips the prompt)* | `supabase projects list` | `SUPABASE_ACCESS_TOKEN` |
 | Auth0 🔵⌨️ | `brew install auth0/auth0-cli/auth0` | `auth0 login` *(survey "As a user/machine" + `Press Enter`; match the user code)* | `auth0 tenants list` | — *(no env token; CI = machine login `auth0 login --client-id … --client-secret … --domain …`)* |
 | Stripe 🔵⌨️ | `brew install stripe/stripe-cli/stripe` | `stripe login` *(prints a pairing code, then `Press Enter to open the browser` — drive the Enter in a PTY (`expect`/`noninteractive`); confirm the pairing code matches)* | `stripe get /v1/account` *(authenticated API call — `config --list` only echoes local config and passes even when logged-out)* | `STRIPE_API_KEY` / `--api-key` |
@@ -43,7 +43,7 @@ These show an interactive prompt *before* the popup, so a non-TTY run errors out
 - **Auth0** — survey `How would you like to authenticate? As a user / As a machine`, then `Press Enter to open the browser`.
 - **Stripe** — prints a pairing code, then `Press Enter to open the browser` gates the popup; device-code, so confirm the displayed pairing code before approving.
 - **Supabase** — `Press Enter to open browser`, then `Enter your access token` (paste the token the browser page mints; or skip with `--token`/`SUPABASE_ACCESS_TOKEN`).
-- **Convex** — `Device name:` prompt (skip with `--device-name <name>`).
+- **Convex** — TWO gates: a `Device name:` prompt (skip with `--device-name <name>`) **and** a following `Open the browser? (Y/n)` prompt that also needs a TTY, so `--device-name` alone still fatals non-interactive. Drive the `Open the browser?` answer with `expect`/`noninteractive` — the generic `expect` recipe's `open the browser` match already handles it.
 - **Sanity** — only the provider picker is interactive; `--provider google|github` skips it and the rest is hands-free.
 
 ## Common popup-suppressors to NOT set
