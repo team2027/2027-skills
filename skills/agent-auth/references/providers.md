@@ -23,7 +23,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 | Neon 🟢 | `npx -y neonctl` | `neonctl auth` *(CI var blocks it unless `--force-auth`; prints `INFO: Auth complete`)* | `neonctl me` | `NEON_API_KEY` |
 | Turso 🟢 | curl `get.tur.so` / tap binary | `turso auth login` *(unset `TURSO_API_TOKEN` first)* | `turso auth whoami` | `TURSO_API_TOKEN` |
 | Clerk 🟢 | `npx -y clerk` | `clerk auth login` *(does NOT print URL — popup only)* | `clerk whoami` | `CLERK_SECRET_KEY` |
-| Railway 🟢⌨️ | `brew install railway` *(npm postinstall fetches the binary; breaks under `ignore-scripts` — check `railway --version` prints)* | `railway login` *(needs a TTY → `expect`; prints `Logged in as <name>`)* | `railway whoami` | `RAILWAY_API_TOKEN` |
+| Railway 🟢⌨️ | `npm i -g @railway/cli` *(need **v5+**; if `railway --version` is blank reinstall `--foreground-scripts` — postinstall fetches the binary, skipped under `ignore-scripts`; avoid brew, it may pin an old v4.x whose browser callback is flaky)* | `railway login` *(TTY → `expect`); **if it returns `No token received`, retry `railway login --browserless`** (pairing code)* | `railway whoami` | `RAILWAY_API_TOKEN` |
 | Heroku 🟢⌨️ | `npx -y heroku@latest` *(`npm i -g` lands off non-interactive PATH)* | `npx noninteractive heroku login` *(`Press any key…` raw-mode → send a key; unset `HEROKU_API_KEY`; prints `Logged in as <email>`)* | `heroku whoami` | `HEROKU_API_KEY` |
 | Daytona 🟢⌨️ | binary / `brew` *(no npm pkg → `noninteractive start daytona …` or `expect`)* | `daytona login` *(TUI picker → Enter on "Login with Browser"; prints `Successfully logged in!`)* | `daytona organization list` | `DAYTONA_API_KEY` (or `login --api-key`) |
 | Convex 🟢⌨️ | `npx -y convex` | `convex login --device-name <name>` *(`--device-name` skips the prompt)* | `convex login status` | `CONVEX_DEPLOY_KEY` |
@@ -36,7 +36,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 
 These show an interactive prompt *before* the popup, so a non-TTY run errors out. Run them in a real-terminal foreground, via `npx noninteractive` (`<pkg>` or `start <binary>`) or `expect`, sending the keystroke:
 
-- **Railway** — needs a TTY (non-TTY: `Cannot login in non-interactive mode`); v5.x auto-opens under a PTY with no keystroke (older builds prompted `Open the browser? (Y/n)`). `railway login --browserless` is the pairing-code fallback (also needs a TTY).
+- **Railway** — needs a TTY (non-TTY: `Cannot login in non-interactive mode`); v5.x auto-opens under a PTY with no keystroke (old v4.x prompts `Open the browser? (Y/n)`). Its browser callback is **flaky** — if `railway login` ends with `No token received` (web page says "try `--browserless`"), retry `railway login --browserless` (pairing code; also needs a TTY).
 - **Heroku** — `Press any key to open up the browser to login or q to exit` (raw-mode `stdin`); piped stdin throws.
 - **Daytona** — TUI `Select Authentication Method` → `Login with Browser` (press Enter).
 - **Auth0** — survey `How would you like to authenticate? As a user / As a machine`, then `Press Enter to open the browser`.
