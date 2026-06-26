@@ -40,11 +40,11 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 expect -c 'spawn <cli> login; set timeout 180; expect {
   -nocase -re "(any key|open the browser|\(y/n\)|Login with Browser)" {send "\r"; exp_continue}
   -nocase -re "(logged in|success|authenticated)" {exit 0}
-  eof {exit 0}
   -nocase -re "(error|denied|no token|no code)" {exit 1}
-  timeout {exit 2} }'
+  timeout {exit 2}
+  eof {catch wait r; exit [lindex $r 3]} }'
 ```
-Treat `eof` (clean exit) as success — most CLIs exit 0 on success and print no fixed string. Prefer inline `expect -c '…'` over a `.exp` file (Write won't clobber an unread scratchpad file).
+On `eof`, propagate the child's **real exit code** (`catch wait r; exit [lindex $r 3]`), not a blanket `exit 0` — `eof` only means the child closed its fd, so a bare `exit 0` reports success even when the CLI died non-zero with an error your narrow regex missed (`unauthorized`, `connection refused`). A clean exit (0) still passes; a non-zero exit now correctly fails. Verify with whoami/status regardless. Prefer inline `expect -c '…'` over a `.exp` file (Write won't clobber an unread scratchpad file).
 
 **Per-provider commands for 20 CLIs** (exact login command, TTY caveats, verify, token env): see [`references/providers.md`](references/providers.md). Sanity and Netlify are below.
 
