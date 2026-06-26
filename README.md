@@ -9,6 +9,7 @@ Each skill is a self-contained folder under [`skills/`](./skills). Drop one into
 | Skill | What it does |
 |---|---|
 | [`designing-agent-error-messages`](./skills/designing-agent-error-messages) | Audit and rewrite your error messages, exceptions, and API/SDK/CLI failures so an agent can self-correct from the message alone. Grounded in patterns from 3,500+ agent runs across 136 dev tools. |
+| [`agent-auth`](./skills/agent-auth) | Log a real human into a dev tool's CLI by auto-opening the OAuth browser popup and letting the login complete itself — no token copy-paste, no browser automation. Tested recipes for Sanity and Netlify. |
 
 _More coming — discoverability, agent-friendly docs, SDK design._
 
