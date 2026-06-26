@@ -1,0 +1,20 @@
+skills/agent-auth/references/providers.md
+  s_98905ab6605ce4::t_84a64f08b85289 39
+  s_98905ab6605ce4::t_f1a895864382f6 26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "b397ec1fabf5935433d0eb687010ffdee3abf36b",
+  "prompts": {},
+  "sessions": {
+    "s_98905ab6605ce4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5879cea0-1395-45c7-833e-6bf4aaca78bb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aleksey Bykhun <theisease@gmail.com>"
+    }
+  }
+}
