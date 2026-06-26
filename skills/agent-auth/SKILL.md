@@ -35,6 +35,8 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 expect -c 'spawn <cli> login; expect -re "(any key|Browser|Device)"; send "\r"; set timeout 180; expect -re "(logged in|error)"'
 ```
 
+Using `npx noninteractive` for an npm CLI instead? **Starting the session isn't enough** — `npx noninteractive send <cli> ' '` (or `''` for Enter) to answer the gate, then `read --wait` for the URL/success. A login left parked at its prompt with no keystroke sent is the #1 way this fails.
+
 **Per-provider commands for 20 CLIs** (exact login command, TTY caveats, verify, token env): see [`references/providers.md`](references/providers.md). Sanity and Netlify are below.
 
 ## Sanity  (popup: auto-opens · login: automatic · verified)
