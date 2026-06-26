@@ -21,7 +21,7 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
    ```bash
    npx -y <pkg>@latest login        # popup opens immediately; call returns on success (timeout ~300s)
    ```
-4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." Only if it didn't open (headless) surface the URL from the login output.
+4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." If it didn't open (headless), surface the URL — **except for localhost-callback CLIs** (Sanity `:4321`, wrangler `:8976`, …): on a remote/headless host the human's browser can't reach *this* box's `localhost`, so the pasted URL never completes the callback. There, skip the popup and use the token/env path instead.
 5. **Wait for the success line, then verify** (whoami/status).
 
 **Run the login once and wait — don't fire it repeatedly.** It opens a local callback server and blocks until the human approves; spawning extra logins because you didn't see instant success just leaves competing servers behind. One login, keep it alive, wait for the success line.
