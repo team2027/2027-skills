@@ -24,7 +24,9 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." Only if it didn't open (headless) surface the URL from the login output.
 5. **Wait for the success line, then verify** (whoami/status).
 
-**Never start a second login while one is pending, and kill stale callback-port listeners before retrying** — a leftover server on the callback port makes the new login's callback resolve to the wrong session → `{"ok":false,"error":"not found"}`. The #1 way agents break this flow is firing `login` repeatedly when they don't see instant success; run it once and *wait*.
+**Never start a second login while one is pending, and free the callback port first.** A leftover login server (even from a previous attempt, even on the other IP family) makes the callback resolve to the wrong session → `{"ok":false,"error":"not found"}`. The #1 way agents break this flow is firing `login` repeatedly when they don't see instant success; run it once and *wait*.
+
+**Fixed callback ports collide with the user's running apps.** Sanity hard-codes its callback to `localhost:4321` — which is also Astro/Vite's default dev port. If *another* app is on that port, the browser's `localhost:4321` callback hits *that app* and it returns `{"ok":false,"error":"not found"}` (the error is the other app's, not the CLI's). Check first: `lsof -nP -iTCP:4321 -sTCP:LISTEN`. Kill a *stale login server*, but if it's the user's own dev server, **say so and ask them to free the port — don't kill their work.**
 
 **If the browser login fails, read the CLI's error and follow its hint — don't blindly retry.** Many CLIs offer a device-code mode (e.g. `railway login --browserless`): it prints a URL + pairing code instead of using a localhost callback (more robust, works headless). Device-code mode usually needs a real TTY, so drive it with `npx noninteractive <cli> login --browserless` and read the URL/code from the returned `urls` array. Token env vars are the last-resort no-popup path.
 
