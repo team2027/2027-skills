@@ -22,7 +22,7 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
    npx -y <pkg>@latest login        # popup opens immediately; call returns on success (timeout ~300s)
    ```
    Backgrounded (`run_in_background`) returns immediately with no inline output — poll its output file for the URL, then the success line / process-exit; don't foreground-`sleep` (this harness blocks it).
-4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." If it didn't open (headless), surface the URL — **except for localhost-callback CLIs** (Sanity `:4321`, wrangler `:8976`, …): on a remote/headless host the human's browser can't reach *this* box's `localhost`, so the pasted URL never completes the callback. There, skip the popup and use the token/env path instead.
+4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." If it didn't open (headless), surface the URL — **except for localhost-callback CLIs** (Sanity `:4321`, wrangler `:8976`, …): on a remote/headless host the human's browser can't reach *this* box's `localhost`, so the pasted URL never completes the callback. There, skip the popup and use the token/env path instead. For device-code flows (Vercel, Stripe, Auth0, Supabase) the page shows a `user_code` — echo it to the human so they can confirm the match before approving.
 5. **Wait for the success line — or just the process exiting (some CLIs print none) — then verify** (whoami/status).
 
 **Run the login once and wait — don't fire it repeatedly.** It opens a local callback server and blocks until the human approves; spawning extra logins because you didn't see instant success just leaves competing servers behind. One login, keep it alive, wait for the success line.
@@ -41,7 +41,7 @@ expect -c 'spawn <cli> login; expect -re "(any key|Browser|Device)"; send "\r"; 
 
 - Install: `npx -y @sanity/cli@latest` (bin `sanity`; `@sanity/cli` is lighter than the `sanity` meta-pkg and has full `login`). In a Studio project, `npx sanity login` is instant.
 - Login: `npx -y @sanity/cli@latest login --provider google` (swap `google`↔`github` for the human's account). **Pass `--provider`** — bare `sanity login` shows an interactive picker that hangs when backgrounded. Run it once, persistent; the popup opens (`Opening browser at <url>`) and the `localhost:4321` callback must stay reachable until approval.
-- Success: prints **`Login successful`** and the process exits 0 (callback server shuts itself down). Verified live: completes as `User: <email>`.
+- Success: exits 0 (callback server shuts down) and prints `Login successful` on current versions — but detect completion by the exit + `sanity debug` → `User: <email>` (authoritative), not by grepping the string. Verified live as `User: <email>`.
 - Verify: `npx -y @sanity/cli@latest debug` → `User: <email>`. (`sanity whoami` doesn't exist.)
 - CI / no popup: `export SANITY_AUTH_TOKEN=<token>` (read before config), or `sanity login --with-token < token.txt`.
 

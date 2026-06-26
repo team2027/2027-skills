@@ -4,6 +4,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 
 **Legend**
 - 🟢 default `login` auto-opens the popup **and** stores the token itself — the happy path.
+- 🔵 **device-code** — shows a `user_code`/URL to confirm in the browser (no localhost callback); surface the code to the human before they approve.
 - ⌨️ **needs a real TTY** — bare/backgrounded login hits an interactive prompt and *fatals*. Drive it in a real-terminal foreground, with `npx noninteractive` (npm-package CLIs only), or `expect` (binary / `npm i -g` / brew CLIs).
 - 🔗 **prints the URL only** (no auto-open) — you must surface the URL to the human yourself.
 - `token` = the env var that skips the popup entirely (CI / headless / no-popup fallback).
@@ -12,7 +13,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 |---|---|---|---|---|
 | Sanity 🟢 | `npx -y @sanity/cli@latest` | `sanity login --provider google` ⌨️*(picker → pass `--provider`)* | `sanity debug` → `User:` | `SANITY_AUTH_TOKEN` |
 | Netlify 🟢 | `npx -y netlify-cli` | `netlify login` *(polls API, no localhost server)* | `netlify status` | `NETLIFY_AUTH_TOKEN` |
-| Vercel 🟢 | `npx -y vercel` | `vercel login` *(unset `CI` — `CI=1` suppresses the popup)* | `vercel whoami` | `VERCEL_TOKEN` |
+| Vercel 🔵 | `npx -y vercel` | `vercel login` *(device-code: auto-opens `…/oauth/device?user_code=XXXX`; show the human the code; unset `CI`)* | `vercel whoami` | `VERCEL_TOKEN` |
 | Cloudflare 🟢 | `npx -y wrangler@latest` | `wrangler login` *(localhost:8976 callback; prints `Successfully logged in.`)* | `wrangler whoami` | `CLOUDFLARE_API_TOKEN` (+`CLOUDFLARE_ACCOUNT_ID`) |
 | Modal 🟢 | `pip install modal` | `modal setup` *(NOT `modal login`)* | `modal token info` | `MODAL_TOKEN_ID`+`MODAL_TOKEN_SECRET` |
 | E2B 🟢 | `npx -y @e2b/cli` | `e2b auth login` *(short-circuits if already logged in)* | `e2b auth info` | `E2B_API_KEY` *(`E2B_ACCESS_TOKEN` is deprecated — retired Aug 2026)* |
@@ -45,4 +46,4 @@ These show an interactive prompt *before* the popup, so a non-TTY run errors out
 
 ## Common popup-suppressors to NOT set
 
-`CI=1` (Vercel, WorkOS, Neon → URL prints but no popup) · `BROWSER=none` / bogus `$BROWSER` · `--no-open` / `--no-browser` / `--headless` / `--browserless` / `--non-interactive` · a token env var already set (most CLIs skip login when their `*_TOKEN`/`*_API_KEY` is present — unset it to force the popup).
+`CI=1` (Vercel, WorkOS, Neon → URL prints but no popup) · `BROWSER=none` / bogus `$BROWSER` · `--no-open` / `--no-browser` / `--headless` / `--browserless` / `--non-interactive` · a token env var already set (most CLIs skip login when their `*_TOKEN`/`*_API_KEY` is present — unset it to force the popup). Stored creds in the CLI's *config file* (not just env) can also short-circuit login or block verify (e.g. Daytona's `config.json` `api.key`) — clear those too if a login mysteriously no-ops.
