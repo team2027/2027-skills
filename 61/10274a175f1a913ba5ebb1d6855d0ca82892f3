@@ -1,0 +1,31 @@
+skills/agent-auth/SKILL.md
+  s_98905ab6605ce4::t_e1ab48627f6232 34
+  s_98905ab6605ce4::t_56f811784233d0 19
+  s_98905ab6605ce4::t_525a8ddf99738e 49-50
+  s_98905ab6605ce4::t_40104cbb24b8c7 41
+skills/agent-auth/references/providers.md
+  s_98905ab6605ce4::t_9a8462d73e3117 32
+  s_98905ab6605ce4::t_bcb229146c9c6e 45
+  s_98905ab6605ce4::t_6fd627173f9dad 31
+  s_98905ab6605ce4::t_f4bffcf13ea4f5 46
+  s_98905ab6605ce4::t_b6d29591377671 10
+  s_98905ab6605ce4::t_99c894381926fb 33
+  s_98905ab6605ce4::t_8602a75e82bf35 26
+  s_98905ab6605ce4::t_25d0c11cdd6271 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "6110274a175f1a913ba5ebb1d6855d0ca82892f3",
+  "prompts": {},
+  "sessions": {
+    "s_98905ab6605ce4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5879cea0-1395-45c7-833e-6bf4aaca78bb",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Aleksey Bykhun <theisease@gmail.com>"
+    }
+  }
+}
