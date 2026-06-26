@@ -15,33 +15,30 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 
 ## Fast-path (do this every time)
 
-1. **DON'T**: hunt for tokens (`env | grep`, `cat ~/.config/.../config.json`) — none exist until login. DON'T drive the browser (xdotool, screenshot the X root, CDP :9222, browser-agent logs). DON'T heavy-install an SDK (`npm i <pkg>`, 1000+ pkgs / ~2 min) just to authenticate.
+1. **DON'T**: hunt for tokens (`env | grep`, `cat ~/.config/.../config.json`) — none exist until login. DON'T drive the browser (xdotool, screenshot the X root, CDP, browser-agent logs). DON'T heavy-install an SDK (`npm i <pkg>`, 1000+ pkgs / ~2 min) just to authenticate.
 2. **Get the CLI light**: `npx -y <cli-package>@latest` (no global install; warm runs ~2s).
-3. **Run the DEFAULT login backgrounded.** Default = the mode that auto-opens the browser; do NOT pass popup-suppressing flags (`--no-open`, `BROWSER=none`). Keep the PID; capture stdout for a fallback URL:
+3. **Run the default login ONCE and keep that one process alive until the human approves.** The login starts a local callback server (e.g. `localhost:4321`); if its process dies, the human's click 404s. So run it **foreground with a long timeout**, or as a *persistent* background job (`run_in_background`, `nohup … & disown`) — **never** a bare `… &` that ends with the shell call (that kills the server), and don't pass popup-suppressing flags (`--no-open`, `BROWSER=none`):
    ```bash
-   npx -y <pkg> login > /tmp/login.out 2>&1 & PID=$!
-   for i in $(seq 1 30); do grep -qE 'https?://' /tmp/login.out && break; sleep 1; done
+   npx -y <pkg>@latest login        # popup opens immediately; call returns on success (timeout ~300s)
    ```
-   Background with a bare `&` — not `( … & )`, which throws away `$!`.
-4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the browser window that just opened." Only if it didn't open (headless / no desktop) do you paste the captured URL: `grep -oE 'https?://[^ ]+' /tmp/login.out | head -1`.
-5. **`wait $PID`** — the CLI catches the OAuth callback, **stores the token itself**, and exits. Then verify with the CLI's whoami/status.
+4. **The popup opens in the human's browser automatically.** Tell them: "approve the login in the window that just opened." Only if it didn't open (headless) surface the URL from the login output.
+5. **Wait for the success line, then verify** (whoami/status).
 
-Two things make or break the popup: don't pass a flag that suppresses the open, and **pick a provider up-front** if the CLI would otherwise show an interactive picker — a picker needs a TTY and hangs a backgrounded login.
+**Never start a second login while one is pending, and kill stale callback-port listeners before retrying** — a leftover server on the callback port makes the new login's callback resolve to the wrong session → `{"ok":false,"error":"not found"}`. The #1 way agents break this flow is firing `login` repeatedly when they don't see instant success; run it once and *wait*.
 
-Fallbacks: (a) headless box, no browser → surface the URL (step 4) for the human to open elsewhere; (b) CI / unattended → use the token env var below, no popup. Only reach for `npx noninteractive <name> [args]` if a CLI won't open or even print its URL without a real TTY.
+**If the browser login fails, read the CLI's error and follow its hint — don't blindly retry.** Many CLIs offer a device-code mode (e.g. `railway login --browserless`): it prints a URL + pairing code instead of using a localhost callback (more robust, works headless). Device-code mode usually needs a real TTY, so drive it with `npx noninteractive <cli> login --browserless` and read the URL/code from the returned `urls` array. Token env vars (below) are the last-resort no-popup path.
 
-## Sanity  (popup: auto-opens · login: automatic)
+## Sanity  (popup: auto-opens · login: automatic · verified)
 
 - Install: `npx -y @sanity/cli@latest` (bin `sanity`; `@sanity/cli` is lighter than the `sanity` meta-pkg and has full `login`). In a Studio project, `npx sanity login` is instant.
-- Login: `npx -y @sanity/cli@latest login --provider google > /tmp/sanity_login.out 2>&1 & SP=$!` (swap `google`↔`github` for the human's account). **Pass `--provider`** — bare `sanity login` shows an interactive picker that hangs when backgrounded. Default (no `--no-open`) prints `Opening browser at <url>` and opens it; on macOS `BROWSER=…` is ignored so the popup always opens.
-- Auto-completes: the popup redirects to `http://localhost:4321/callback`, the CLI stores the token and the process EXITS 0 — there's no success text, so `wait $SP` is your signal. (Callback is on `localhost`, so it completes on the human's own machine.)
+- Login: `npx -y @sanity/cli@latest login --provider google` (swap `google`↔`github` for the human's account). **Pass `--provider`** — bare `sanity login` shows an interactive picker that hangs when backgrounded. Run it once, persistent; the popup opens (`Opening browser at <url>`) and the `localhost:4321` callback must stay reachable until approval.
+- Success: prints **`Login successful`** and the process exits 0 (callback server shuts itself down). Verified live: completes as `User: <email>`.
 - Verify: `npx -y @sanity/cli@latest debug` → `User: <email>`. (`sanity whoami` doesn't exist.)
 - CI / no popup: `export SANITY_AUTH_TOKEN=<token>` (read before config), or `sanity login --with-token < token.txt`.
 
 ## Netlify  (popup: auto-opens · login: automatic)
 
 - Install: `npx -y netlify-cli` (NOT `npx netlify` — that's the JS API client). Bin `netlify`/`ntl`. `NETLIFY_TELEMETRY_DISABLED=1` skips the telemetry prompt.
-- Login: `npx -y netlify-cli login > /tmp/ntl.out 2>&1 & NP=$!`. Default `netlify login` prints `Opening <url>`, opens the popup, polls until the human approves, **stores the token**, and prints `You are now logged into your Netlify account!` before exiting. Do NOT use `--request` (the no-browser ticket flow that makes the human copy a URL while you poll `--check`), and do NOT set `BROWSER=none`.
-- Auto-completes: `wait $NP` returns once the token is stored. If a token is already cached it short-circuits with `Already logged in …` and exits (no popup needed).
+- Login: `npx -y netlify-cli login`. Default opens the popup and polls Netlify's API (no localhost callback to collide), stores the token, prints `You are now logged into your Netlify account!`. If a token is already cached it short-circuits `Already logged in …`. Do NOT use `--request` (the copy-a-URL ticket flow) or `BROWSER=none`.
 - Verify: `npx -y netlify-cli status` → "Current Netlify User" block.
 - CI / no popup: `export NETLIFY_AUTH_TOKEN=<pat>` or `--auth <token>` on any command (PAT from app.netlify.com/user/applications).
