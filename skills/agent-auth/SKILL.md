@@ -26,7 +26,11 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 
 **Never start a second login while one is pending, and kill stale callback-port listeners before retrying** — a leftover server on the callback port makes the new login's callback resolve to the wrong session → `{"ok":false,"error":"not found"}`. The #1 way agents break this flow is firing `login` repeatedly when they don't see instant success; run it once and *wait*.
 
-**If the browser login fails, read the CLI's error and follow its hint — don't blindly retry.** Many CLIs offer a device-code mode (e.g. `railway login --browserless`): it prints a URL + pairing code instead of using a localhost callback (more robust, works headless). Device-code mode usually needs a real TTY, so drive it with `npx noninteractive <cli> login --browserless` and read the URL/code from the returned `urls` array. Token env vars (below) are the last-resort no-popup path.
+**If the browser login fails, read the CLI's error and follow its hint — don't blindly retry.** Many CLIs offer a device-code mode (e.g. `railway login --browserless`): it prints a URL + pairing code instead of using a localhost callback (more robust, works headless). Device-code mode usually needs a real TTY, so drive it with `npx noninteractive <cli> login --browserless` and read the URL/code from the returned `urls` array. Token env vars are the last-resort no-popup path.
+
+**Some logins gate the popup behind an interactive prompt** ("Press any key…", an auth-method picker, a device-name field) and *fatal* when backgrounded — Railway, Heroku, Daytona, Auth0, Supabase, Convex. Run those in a real terminal foreground or via `npx noninteractive` and answer the prompt.
+
+**Per-provider commands for 20 CLIs** (exact login command, TTY caveats, verify, token env): see [`references/providers.md`](references/providers.md). Sanity and Netlify are below.
 
 ## Sanity  (popup: auto-opens · login: automatic · verified)
 
