@@ -15,7 +15,7 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 | Vercel 🟢 | `npx -y vercel` | `vercel login` *(unset `CI` — `CI=1` suppresses the popup)* | `vercel whoami` | `VERCEL_TOKEN` |
 | Cloudflare 🟢 | `npx -y wrangler@latest` | `wrangler login` *(localhost:8976 callback)* | `wrangler whoami` | `CLOUDFLARE_API_TOKEN` (+`CLOUDFLARE_ACCOUNT_ID`) |
 | Modal 🟢 | `pip install modal` | `modal setup` *(NOT `modal login`)* | `modal token info` | `MODAL_TOKEN_ID`+`MODAL_TOKEN_SECRET` |
-| E2B 🟢 | `npx -y @e2b/cli` | `e2b auth login` *(short-circuits if already logged in)* | `e2b auth info` | `E2B_ACCESS_TOKEN` |
+| E2B 🟢 | `npx -y @e2b/cli` | `e2b auth login` *(short-circuits if already logged in)* | `e2b auth info` | `E2B_API_KEY` *(`E2B_ACCESS_TOKEN` is deprecated — retired Aug 2026)* |
 | WorkOS 🟢 | `npx -y workos@latest` | `workos auth login` *(NOT `workos login`)* | `workos auth status` | `WORKOS_API_KEY` |
 | Fly.io 🟢 | `brew install flyctl` / curl | `fly auth login` *(remote poll)* | `fly auth whoami` | `FLY_API_TOKEN` |
 | Render 🟢 | `brew install render` / binary | `render login` *(remote poll, works headless)* | `render whoami` | `RENDER_API_KEY` |
@@ -26,9 +26,9 @@ Verified by probing each CLI (help + source + shadowed-`open` tests). Sanity was
 | Heroku 🟢⌨️ | `npm i -g heroku` | `heroku login` *(`Press any key…` raw-mode; unset `HEROKU_API_KEY`)* | `heroku whoami` | `HEROKU_API_KEY` |
 | Daytona 🟢⌨️ | binary / `brew` *(no npm pkg)* | `daytona login` *(TUI auth-method picker → Enter on "Login with Browser")* | `daytona organization list` | `DAYTONA_API_KEY` (or `login --api-key`) |
 | Convex 🟢⌨️ | `npx -y convex` | `convex login --device-name <name>` *(`--device-name` skips the prompt)* | `convex login status` | `CONVEX_DEPLOY_KEY` |
-| Supabase 🔵⌨️ | `npx -y supabase` / brew tap | `supabase login` *(device-code: `Press Enter`, then paste the code shown after auth)* | `supabase projects list` | `SUPABASE_ACCESS_TOKEN` |
-| Auth0 🔵⌨️ | `brew install auth0/auth0-cli/auth0` | `auth0 login` *(survey "As a user/machine" + `Press Enter`; match the user code)* | `auth0 tenants list` | machine login: `auth0 login --client-id … --client-secret … --domain …` |
-| Stripe 🔗 | `brew install stripe/stripe-cli/stripe` | `stripe login` *(agent mode prints URL + poll, does not auto-open; `stripe login --complete <poll-url>` blocks until done)* | `stripe whoami` | `STRIPE_API_KEY` / `--api-key` |
+| Supabase ⌨️ | `npx -y supabase` / brew tap | `supabase login` *(opens browser to mint a token, then prompts `Enter your access token` to paste it back; `--token` / `SUPABASE_ACCESS_TOKEN` skips the prompt)* | `supabase projects list` | `SUPABASE_ACCESS_TOKEN` |
+| Auth0 🔵⌨️ | `brew install auth0/auth0-cli/auth0` | `auth0 login` *(survey "As a user/machine" + `Press Enter`; match the user code)* | `auth0 tenants list` | — *(no env token; CI = machine login `auth0 login --client-id … --client-secret … --domain …`)* |
+| Stripe 🔵 | `brew install stripe/stripe-cli/stripe` | `stripe login` *(opens browser; confirm the pairing code it displays)* | `stripe config --list` | `STRIPE_API_KEY` / `--api-key` |
 | Stack Auth 🔗 | `npx -y @stackframe/stack-cli` | `stack login` *(prints URL, polls; NOT `@stackframe/init-stack`)* | `stack whoami` | `STACK_CLI_REFRESH_TOKEN` |
 
 ## The ⌨️ TTY-gated logins (where a bare/backgrounded run fatals)
