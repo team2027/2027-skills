@@ -37,7 +37,7 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 
 **If the browser login fails, read the CLI's error and follow its hint — don't blindly retry.** Many CLIs offer a device-code mode (e.g. `railway login --browserless`): it prints a URL + pairing code instead of using a localhost callback (more robust, works headless). Device-code mode usually needs a real TTY, so drive it with `npx noninteractive <cli> login --browserless` and read the URL/code from the returned `urls` array. Token env vars are the last-resort no-popup path.
 
-**Some logins gate the popup behind an interactive prompt** ("Press any key…", an auth-method picker, a device-name field) and *fatal* when backgrounded — Railway, Heroku, Daytona, Auth0, Supabase, Convex. Drive the gate in a PTY, two ways:
+**Some logins gate the popup behind an interactive prompt** ("Press any key…", an auth-method picker, a device-name field) and *fatal* when backgrounded — Railway, Daytona, Auth0, Supabase, Convex. Drive the gate in a PTY, two ways:
 
 - **`noninteractive`** (also auto-opens the OAuth URL it finds): `npx noninteractive <pkg> login` for an npm CLI, or `npx noninteractive start <binary> login` for a binary/brew CLI (`start` runs the literal command, not `npx`). **Then send the keystroke** — `npx noninteractive send <sess> ' '` (or `''` for Enter) — and `read --wait` for the URL/success. Just starting it leaves the login parked at the gate (the #1 failure). Flags (`--timeout`/`--no-open`) go on the `send`/`read` calls, NOT trailing the login command (they fatal `unknown flag`). It auto-opens **every** URL it prints — the auth popup is the first `…authorize…`; a later release/docs link is a junk tab. It also rescans its **whole** buffer on each `send`, so it **re-opens** URLs — a re-opened, already-consumed auth URL renders a *phantom* `Could not create CLI login session` tab even though your login is fine. **You can't self-count windows**: to report what opened, count the `[opened: <url>]` lines in the tool results, and expect ≥1 junk/phantom tab on these flows. Device-code CLIs (Render) need no keystroke (the popup opens on `start`).
 - **`expect`** bundles spawn + keystroke + success/error exit in one line:
@@ -56,7 +56,7 @@ On `eof`, propagate the child's **real exit code** (`catch wait r; exit [lindex 
 
 **OS note — validated on macOS.** The login commands, the 🟢/🔵/⌨️/🔗/🔑 classes, and the `expect`/`noninteractive` recipes are OS-agnostic. What differs on **Linux**: **install** (use each provider's docs-URL method / system package manager / `curl` installer — not `brew` or Darwin-arm64 tarballs) and **paths** — user binaries live under `~/.local/bin`, config under `~/.config` (XDG), not `/opt/homebrew/bin` or `~/Library/…`. Invoke a CLI by its name on PATH (or `command -v <cli>`); don't hard-code `/opt/homebrew`.
 
-**Per-provider commands for 20 CLIs** (exact login command, TTY caveats, verify, token env): see [`references/providers.md`](references/providers.md). Sanity and Netlify are below.
+**Per-provider commands for 19 CLIs** (exact login command, TTY caveats, verify, token env): see [`references/providers.md`](references/providers.md). Sanity and Netlify are below.
 
 ## Sanity  (popup: auto-opens · login: automatic · verified)
 
