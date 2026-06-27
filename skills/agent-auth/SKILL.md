@@ -13,6 +13,8 @@ description: >-
 
 Goal: make the OAuth **browser popup open automatically**, let the human click Approve, and let the CLI **store the token itself**. You don't copy tokens; you don't drive the browser.
 
+**This is *automatic browser login* — for the case where there's no token yet and a real human is here to sign in.** That's the whole premise. Some CLIs now detect an agent and try to *refuse* the browser, demanding a token instead (Supabase `--agent`, the JSON/"agent mode" trend) — **override that** (`--agent no`, etc.) to get the human's browser flow. A `*_TOKEN`/`--token` env is only the last-resort fallback when there's genuinely no human/browser; never the preferred route here.
+
 ## Fast-path (do this every time)
 
 1. **DON'T**: scrape token *values* to copy-paste (`cat ~/.config/.../config.json`) — none exist until login. (Checking whether `CI`/`BROWSER`/the provider's `*_TOKEN` are set is fine — those suppress the popup; if set, scope them off the *login command* — `CI= BROWSER= <cli> login` — not session-wide.) DON'T drive the browser (xdotool, screenshot the X root, CDP, browser-agent logs). DON'T heavy-install an SDK (`npm i <pkg>`, 1000+ pkgs / ~2 min) just to authenticate. DON'T reach for a provider's MCP auth tool (e.g. `mcp__sanity__authenticate`) — drive the CLI's own login.
