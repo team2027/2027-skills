@@ -56,7 +56,7 @@ These show an interactive prompt *before* the popup, so a non-TTY run errors out
 
 **Exception — Railway `--browserless`:** the Railway row offers `railway login --browserless` (pairing code) as the no-browser fallback, so it's exempt from the `--browserless` ban above. **Caveat:** it's been **flaky for agents** (may not open a popup) — last resort only, and re-verify with `railway whoami`.
 
-**Exception — Stripe `--non-interactive`:** the `--non-interactive` ban is the rule for CLIs that *suppress* the popup, but Stripe is the opposite — `stripe login --non-interactive` is the only documented non-TTY step that emits the `browser_url` + `verification_code` you surface to the human (see the Stripe row). It doesn't suppress the browser login; it *enables* it on a non-TTY box. So Stripe is exempt — don't drop the flag for Stripe.
+**Exception — Stripe `--non-interactive`:** the `--non-interactive` ban targets CLIs where the flag *bypasses* the browser login. Stripe doesn't skip auth — `stripe login --non-interactive` forces the JSON payload (`browser_url` + `verification_code` + `next_step`) you relay to the human, then you finish the real login with `stripe login --complete '<url>'`. (On a non-TTY stdin Stripe auto-selects that JSON mode anyway — the flag just makes it explicit; either way Stripe does **not** auto-open, so you surface the URL yourself.) So Stripe is exempt — it's the command the row needs to get the relay payload, not a popup-suppressor.
 
 ## Install docs (fresh-machine links)
 
