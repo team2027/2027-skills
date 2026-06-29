@@ -15,20 +15,23 @@ _More coming — discoverability, agent-friendly docs, SDK design._
 
 ## Install
 
+Copy whichever skill(s) you want from the table above — swap the skill name as needed (`agent-auth`, `designing-agent-error-messages`, …).
+
 **Project scope** (this repo only):
 ```bash
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
 mkdir -p .claude/skills
+cp -r /tmp/2027-skills/skills/agent-auth .claude/skills/
 cp -r /tmp/2027-skills/skills/designing-agent-error-messages .claude/skills/
 ```
 
 **Personal scope** (all your projects):
 ```bash
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
-cp -r /tmp/2027-skills/skills/designing-agent-error-messages ~/.claude/skills/
+cp -r /tmp/2027-skills/skills/agent-auth ~/.claude/skills/
 ```
 
-Then in Claude Code, the skill loads automatically when you're working on error handling — or invoke it directly with `/designing-agent-error-messages`.
+Then in Claude Code each skill loads automatically when it's relevant — or invoke one directly: `/agent-auth`, `/designing-agent-error-messages`.
 
 ## See where a real agent gets stuck in your product
 
