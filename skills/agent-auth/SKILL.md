@@ -45,12 +45,12 @@ Goal: make the OAuth **browser popup open automatically**, let the human click A
 ```bash
 expect -c 'spawn <cli> login; set timeout 180; expect {
   -nocase -re "(press enter|any key|open the browser|open browser|\(y/n\)|Login with Browser)" {send "\r"; exp_continue}
-  -nocase -re "(logged in|success|authenticated)" {exit 0}
+  -nocase -re "(logged in|signed in|success|authenticated)" {exit 0}
   -nocase -re "(error|denied|no token|no code)" {exit 1}
   timeout {exit 2}
   eof {catch wait r; exit [lindex $r 3]} }'
 ```
-On `eof`, propagate the child's **real exit code** (`catch wait r; exit [lindex $r 3]`), not a blanket `exit 0` — `eof` only means the child closed its fd, so a bare `exit 0` reports success even when the CLI died non-zero with an error your narrow regex missed (`unauthorized`, `connection refused`). A clean exit (0) still passes; a non-zero exit now correctly fails. Verify with whoami/status regardless. Prefer inline `expect -c '…'` over a `.exp` file (Write won't clobber an unread scratchpad file).
+On `eof`, propagate the child's **real exit code** (`catch wait r; exit [lindex $r 3]`), not a blanket `exit 0` — `eof` only means the child closed its fd, so a bare `exit 0` reports success even when the CLI died non-zero with an error your narrow regex missed (`unauthorized`, `connection refused`). A clean exit (0) still passes; a non-zero exit now correctly fails. Verify with whoami/status regardless. **That success alternation is best-effort and non-exhaustive** — CLIs print wildly varied success strings (Railway `Signed in as`, Convex `Saved credentials`, none of which match `logged in`), so don't count on it firing; `eof`→exit-code is the load-bearing signal, the regex just lets a CLI that *lingers* after success exit early. Prefer inline `expect -c '…'` over a `.exp` file (Write won't clobber an unread scratchpad file).
 
 **A few CLIs auto-switch to a JSON/agent mode under non-TTY instead of gating** — don't wrap these in `expect`. Stripe v1.40.9+ is the case: `stripe login --non-interactive` emits a `browser_url`+`verification_code`+`next_step` JSON and **exits 0 — that's step 1, not success**; surface the code, run the `next_step` (`stripe login --complete '<url>'`), then verify.
 
