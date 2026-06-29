@@ -28,6 +28,7 @@ cp -r /tmp/2027-skills/skills/designing-agent-error-messages .claude/skills/
 **Personal scope** (all your projects):
 ```bash
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
+mkdir -p ~/.claude/skills
 cp -r /tmp/2027-skills/skills/agent-auth ~/.claude/skills/
 ```
 
