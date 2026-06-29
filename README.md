@@ -30,6 +30,7 @@ cp -r /tmp/2027-skills/skills/designing-agent-error-messages .claude/skills/
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
 mkdir -p ~/.claude/skills
 cp -r /tmp/2027-skills/skills/agent-auth ~/.claude/skills/
+cp -r /tmp/2027-skills/skills/designing-agent-error-messages ~/.claude/skills/
 ```
 
 Then in Claude Code each skill loads automatically when it's relevant — or invoke one directly: `/agent-auth`, `/designing-agent-error-messages`.
