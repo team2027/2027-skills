@@ -9,25 +9,31 @@ Each skill is a self-contained folder under [`skills/`](./skills). Drop one into
 | Skill | What it does |
 |---|---|
 | [`designing-agent-error-messages`](./skills/designing-agent-error-messages) | Audit and rewrite your error messages, exceptions, and API/SDK/CLI failures so an agent can self-correct from the message alone. Grounded in patterns from 3,500+ agent runs across 136 dev tools. |
+| [`agent-auth`](./skills/agent-auth) | Log a real human into a dev tool's CLI by auto-opening the OAuth browser popup and letting the login complete itself — no token copy-paste, no browser automation. Sanity + Netlify recipes plus a verified login reference for 19 dev-tool CLIs. |
 
 _More coming — discoverability, agent-friendly docs, SDK design._
 
 ## Install
 
+Copy whichever skill(s) you want from the table above — swap the skill name as needed (`agent-auth`, `designing-agent-error-messages`, …).
+
 **Project scope** (this repo only):
 ```bash
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
 mkdir -p .claude/skills
+cp -r /tmp/2027-skills/skills/agent-auth .claude/skills/
 cp -r /tmp/2027-skills/skills/designing-agent-error-messages .claude/skills/
 ```
 
 **Personal scope** (all your projects):
 ```bash
 git clone https://github.com/team2027/2027-skills.git /tmp/2027-skills
+mkdir -p ~/.claude/skills
+cp -r /tmp/2027-skills/skills/agent-auth ~/.claude/skills/
 cp -r /tmp/2027-skills/skills/designing-agent-error-messages ~/.claude/skills/
 ```
 
-Then in Claude Code, the skill loads automatically when you're working on error handling — or invoke it directly with `/designing-agent-error-messages`.
+Then in Claude Code each skill loads automatically when it's relevant — or invoke one directly: `/agent-auth`, `/designing-agent-error-messages`.
 
 ## See where a real agent gets stuck in your product
 
